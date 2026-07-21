@@ -17,9 +17,9 @@
 - 多页面徽章识别
 
 ### 🏰 忘却模块
-- 自动挑战忘却副本
+- 自动挑战忘却副本(前提是站撸不死)
 - 自动拾取宝箱奖励
-- 支持自动使用食物恢复体力
+- 支持根据时间间隔自动使用食物和间隔局数修复武器
 - 自动跳过动画和重新挑战
 
 ## 技术栈
@@ -70,8 +70,8 @@ python src/main.py
 
 ## 使用说明
 
-1. 确保游戏《七日世界》已启动并处于窗口化或全屏模式
-2. 运行程序，等待 OCR 初始化完成（约 2-3 分钟）
+1. 确保游戏《七日世界》已启动并处于全屏模式
+2. 运行程序，等待 OCR 初始化完成（约 1-2 分钟）
 3. 根据需要选择「钓鱼」「徽章」「忘却」标签页
 4. 配置相应参数后点击开始按钮
 
@@ -91,7 +91,7 @@ python src/main.py
 | KEYWORD_FISH | array | ['4','5','6','7','8'] | 鱼竿键位 |
 | MAX_THRESHOLD | float | 1.4 | 钓鱼最大压力阈值 |
 | MIN_THRESHOLD | float | 1.0 | 钓鱼最小压力阈值 |
-| LEVEL_TYPE | string | ordinary | 徽章类型（ordinary/chaos） |
+| LEVEL_TYPE | string | ordinary | 徽章类型（ordinary:挑战馆主/chaos:混沌试炼） |
 | FOOD_TAGS | array | ['8','9','0','-','7'] | 食物快捷键 |
 | FOOD_INTERVAL | int | 60 | 自动进食间隔（秒） |
 | IS_FOOD | bool | true | 是否启用自动进食 |
