@@ -1,0 +1,19 @@
+{
+  "GAME_WINDOW_KEY": "七日世界",
+  "SCREEN_RETRY_COUNT": 3,
+  "SCREEN_RETRY_DELAY": 0.5,
+  "KEYWORD_FISH": "['4', '5', '6', '7', '8']",
+  "MAX_THRESHOLD": 1.4,
+  "MIN_THRESHOLD": 1.0,
+  "LEVEL_TYPE": "ordinary",
+  "BADGE_COUNT": 1,
+  "SELECTED_INDEX": 2,
+  "WWZZ_COUNT": 55,
+  "FOOD_TAGS": "['8', '9', '0', '-', '7']",
+  "FOOD_INTERVAL": 60,
+  "IS_FOOD": true,
+  "WX_KEY": "6",
+  "WX_NUMBER": 38,
+  "IS_WX": true,
+  "WQZZ_TYPE": 1
+}
