@@ -40,8 +40,6 @@ class WQZZ_Bot:
         """是否领取奖励"""
         self.is_pressing_reel = False
         """是否按下左键"""
-        self.is_success = False
-        """是否成功"""
         self.is_fire = False
         """是否开枪"""
         self.init_offsetX = 260
@@ -56,13 +54,7 @@ class WQZZ_Bot:
         """开始时间间隔"""
         self.wx_count = 0
         """万能手次数"""
-        self.is_start = False
-        """是否进入位面"""
-        self.start_rotate_threshold = 1000
-        """旋转阈值"""
         self.loop_time = 20
-        self.start_total = 300
-        self.start_count: float = time.time()
 
     def init_status(self) -> None:
         """初始化状态"""
@@ -71,10 +63,7 @@ class WQZZ_Bot:
         self.is_kill_boos = False
         self.is_reward = False
         self.is_pressing_reel = False
-        self.is_success = False
         self.is_fire = False
-        self.start_count = 0
-        self.start_count = time.time()
 
     def run_wqzz_loop(self):
         """运行主循环"""
@@ -102,41 +91,20 @@ class WQZZ_Bot:
 
     def start_task(self) -> None:
         """开始任务"""
-
-        if not self.is_start:
-            # total = 12
-            # for i in range(total):
-            # if self.event_global.is_stopped():
-            #     return
-            # if self.event_global.is_paused():
-            #     self.event_global.wait_if_paused()
-            #     continue
-            start_img = screen_screenshot(WQZZ_DATA["NOT_START"])
-            if start_img is None:
-                return
-            start_exist, xy = self.ocr.recognize_image(
-                start_img, WQZZ_DATA["NOT_START_NAME"], WQZZ_DATA["NOT_START"]
-            )
-            if start_exist:
-                self.is_start = True
-
-                self.init_status()
-                press_key("f")
-                time.sleep(0.5)
-                [press_key("d") for _ in range(self.state.wqzz_type)]
-                time.sleep(0.5)
-                press_key("f")
-                return
-            # else:
-            #     rel_mouse(-self.start_rotate_threshold, 0)
-            t = time.time()
-            if t - self.start_count >= self.start_total:
-                # self.log_box.add_log("未找到位面入口")
-                self.event_global.msg_queue.put(
-                    {"type": "wqzz_stop", "data": {"msg": "未找到位面入口"}}
-                )
-                self.on_stop()
-                return
+        start_img = screen_screenshot(WQZZ_DATA["NOT_START"])
+        if start_img is None:
+            return
+        start_exist, xy = self.ocr.recognize_image(
+            start_img, WQZZ_DATA["NOT_START_NAME"], WQZZ_DATA["NOT_START"]
+        )
+        if start_exist:
+            self.init_status()
+            press_key("f")
+            time.sleep(0.5)
+            [press_key("d") for _ in range(self.state.wqzz_type)]
+            time.sleep(0.5)
+            press_key("f")
+            return
 
     def buff_task(self) -> None:
         """使用万能手任务"""
@@ -187,7 +155,7 @@ class WQZZ_Bot:
                 scene_img, WQZZ_DATA["SCENE_NAME"], WQZZ_DATA["BOOS"]
             )
             if scene_exist:
-                self.is_start = True
+                # self.is_start = True
                 self.buff_task()
                 time.sleep(1)
                 rel_mouse(250, 0)
@@ -203,8 +171,7 @@ class WQZZ_Bot:
                     t = time.time()
                     if t - s >= self.loop_time:
                         self.esc_exit()
-                        self.init_status()
-                        self.is_start = False
+                        # self.is_start = False
                         return
 
                     skip_img = screen_screenshot(WQZZ_DATA["SKIP"])
@@ -217,6 +184,7 @@ class WQZZ_Bot:
                         press_key("space", 2)
                         break
                     press_key("space")
+                self.init_status()
                 self.is_init_scene = False
                 self.is_boos_scene = True
 
@@ -285,8 +253,6 @@ class WQZZ_Bot:
                 t = time.time()
                 if t - s >= self.loop_time:
                     self.esc_exit()
-                    self.init_status()
-                    self.is_start = False
                     return
                 time.sleep(0.1)
                 press_key("w", 0.5)
@@ -301,57 +267,36 @@ class WQZZ_Bot:
                     time.sleep(0.2)
                     press_key("f")
                     time.sleep(0.2)
-                    self.is_success = True
-                    self.is_reward = False
-                    while xz_exits:
-                        if self.event_global.is_stopped():
-                            # print("停止")
-                            break
-                        if self.event_global.is_paused():
-                            # print("暂停")
-                            self.event_global.wait_if_paused()
-                            continue
 
-                        press_key("esc")
-                        esc_img = screen_screenshot(WQZZ_DATA["ESC"])
-                        if esc_img is None:
-                            return
-                        esc_exits, r = self.ocr.recognize_image(
-                            esc_img, WQZZ_DATA["ESC_NAME"], WQZZ_DATA["ESC"]
-                        )
-                        if esc_exits:
-                            x, y = WQZZ_DATA["EXIT_XY"]
-                            abs_click(x, y)
-                            break
-                        time.sleep(0.1)
+                    self.is_reward = False
+                    self.esc_exit()
 
     def success_task(self) -> None:
         """再次挑战"""
-        if self.is_success:
-            success_img = screen_screenshot(WQZZ_DATA["SUCCESS"])
-            if success_img is None:
+        success_img = screen_screenshot(WQZZ_DATA["SUCCESS"])
+        if success_img is None:
+            return
+        success_exits, r = self.ocr.recognize_image(
+            success_img, WQZZ_DATA["SUCCESS_NAME"], WQZZ_DATA["SUCCESS"]
+        )
+        if success_exits:
+            time.sleep(0.2)
+
+            self.init_status()
+            count = self.state.wwzz_count
+            self.count += 1
+            self.wx_count += 1
+            self.log_box.add_log(f"已刷取{self.count}次")
+            if count > 0 and self.count >= count:
+                self.on_stop()
+                self.msg_queue.put(
+                    {
+                        "type": "wqzz_stop",
+                        "data": {"msg": f"已完成{count}次刷取任务"},
+                    }
+                )
                 return
-            success_exits, r = self.ocr.recognize_image(
-                success_img, WQZZ_DATA["SUCCESS_NAME"], WQZZ_DATA["SUCCESS"]
-            )
-            if success_exits:
-                time.sleep(0.2)
-                self.is_success = False
-                self.is_init_scene = True
-                count = self.state.wwzz_count
-                self.count += 1
-                self.wx_count += 1
-                self.log_box.add_log(f"已刷取{self.count}次")
-                if count > 0 and self.count >= count:
-                    self.on_stop()
-                    self.msg_queue.put(
-                        {
-                            "type": "wqzz_stop",
-                            "data": {"msg": f"已完成{count}次刷取任务"},
-                        }
-                    )
-                    return
-                press_key("y")
+            press_key("y")
 
     def recoil(self) -> None:
         """压枪"""
@@ -359,10 +304,8 @@ class WQZZ_Bot:
         INTERVAL = 1
         while self.is_pressing_reel:
             if self.event_global.is_stopped():
-                # print("停止")
                 return
             if self.event_global.is_paused():
-                # print("暂停")
                 self.event_global.wait_if_paused()
                 continue
             rel_mouse(0, POWER)
@@ -371,7 +314,6 @@ class WQZZ_Bot:
     def on_start(self) -> None:
         self.init_status()
         self.start_init_status()
-        self.is_start = False
         self.event_global.set_running()
         hwnd = focus_game_window(cfg["GAME_WINDOW_KEY"])
         if hwnd:
@@ -396,7 +338,7 @@ class WQZZ_Bot:
         self.event_global.set_stopped()
         self.init_status()
         self.start_init_status()
-        self.is_start = False
+        # self.is_start = False
         # self.is_fire = False
 
     def start_init_status(self) -> None:
@@ -417,9 +359,16 @@ class WQZZ_Bot:
             # print("【松开左键防断线】")
 
     def esc_exit(self) -> None:
-        total = 6
+        total = 20
         for i in range(total):
+            if self.event_global.is_stopped():
+                return
+            if self.event_global.is_paused():
+                self.event_global.wait_if_paused()
+                continue
+
             press_key("esc")
+            time.sleep(0.3)
             esc_img = screen_screenshot(WQZZ_DATA["ESC"])
             if esc_img is None:
                 continue
@@ -427,9 +376,12 @@ class WQZZ_Bot:
                 esc_img, WQZZ_DATA["ESC_NAME"], WQZZ_DATA["ESC"]
             )
             if esc_exits:
-                x, y = WQZZ_DATA["EXIT_XY"]
-                abs_click(x, y)
-
+                # x, y = WQZZ_DATA["EXIT_XY"]
+                # abs_click(x, y)
+                self.init_status()
+                abs_click(r.x, r.y)
+                time.sleep(0.3)
+                press_key("f")
                 break
 
             if i == total - 1:
@@ -437,7 +389,7 @@ class WQZZ_Bot:
                 self.event_global.msg_queue.put(
                     {
                         "type": "wqzz_stop",
-                        "data": {"msg": "页面出错"},
+                        "data": {"msg": "页面出错,退出关卡失败"},
                     }
                 )
 
